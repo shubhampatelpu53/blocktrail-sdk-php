@@ -2,6 +2,8 @@
 
 namespace Blocktrail\SDK\Tests;
 
+use BitWasp\Bitcoin\Network\Network;
+use BitWasp\Bitcoin\Network\NetworkFactory;
 use BitWasp\Bitcoin\Script\ScriptInterface;
 use BitWasp\Bitcoin\Script\ScriptFactory;
 
@@ -91,15 +93,16 @@ class SizeEstimationTest extends BlocktrailTestCase
             'Kz2Lm2hzjPWhv3WW9Na5HUKi4qBxoTfv8fNYAU6KV6TZYVGdK5HW',
         ];
 
+        $network = NetworkFactory::bitcoin();
         /**
          * @var PrivateKeyInterface[] $uncompressed
          * @var PrivateKeyInterface[] $compressed
          */
-        $uncompressed = array_map(function ($wif) {
-            return PrivateKeyFactory::fromWif($wif, null);
+        $uncompressed = array_map(function ($wif) use ($network) {
+            return PrivateKeyFactory::fromWif($wif, null, $network);
         }, $u);
-        $compressed = array_map(function ($wif) {
-            return PrivateKeyFactory::fromWif($wif, null);
+        $compressed = array_map(function ($wif) use ($network) {
+            return PrivateKeyFactory::fromWif($wif, null, $network);
         }, $c);
 
         $fixtures = [];
@@ -147,8 +150,9 @@ class SizeEstimationTest extends BlocktrailTestCase
             'Kz2Lm2hzjPWhv3WW9Na5HUKi4qBxoTfv8fNYAU6KV6TZYVGdK5HW',
         ];
 
-        $pubs = array_map(function ($wif) {
-            return PrivateKeyFactory::fromWif($wif)->getPublicKey();
+        $network = NetworkFactory::bitcoin();
+        $pubs = array_map(function ($wif) use ($network) {
+            return PrivateKeyFactory::fromWif($wif, null, $network)->getPublicKey();
         }, $c);
 
         $multisig = ScriptFactory::scriptPubKey()->multisig(2, $pubs);
@@ -204,8 +208,9 @@ class SizeEstimationTest extends BlocktrailTestCase
             'Kz2Lm2hzjPWhv3WW9Na5HUKi4qBxoTfv8fNYAU6KV6TZYVGdK5HW',
         ];
 
-        $pubs = array_map(function ($wif) {
-            return PrivateKeyFactory::fromWif($wif)->getPublicKey();
+        $network = NetworkFactory::bitcoin();
+        $pubs = array_map(function ($wif) use ($network) {
+            return PrivateKeyFactory::fromWif($wif, null, $network)->getPublicKey();
         }, $c);
 
         $multisig = ScriptFactory::scriptPubKey()->multisig(2, $pubs);
@@ -262,8 +267,9 @@ class SizeEstimationTest extends BlocktrailTestCase
             'Kz2Lm2hzjPWhv3WW9Na5HUKi4qBxoTfv8fNYAU6KV6TZYVGdK5HW',
         ];
 
-        $pubs = array_map(function ($wif) {
-            return PrivateKeyFactory::fromWif($wif)->getPublicKey();
+        $network = NetworkFactory::bitcoin();
+        $pubs = array_map(function ($wif) use ($network) {
+            return PrivateKeyFactory::fromWif($wif, null, $network)->getPublicKey();
         }, $c);
 
         $multisig = ScriptFactory::scriptPubKey()->multisig(2, $pubs);
