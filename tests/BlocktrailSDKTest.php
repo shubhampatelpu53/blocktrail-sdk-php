@@ -146,6 +146,68 @@ class BlocktrailSDKTest extends BlocktrailTestCase
         $this->assertArrayHasKey('result', $response, "'result' key not in response");
     }
 
+    private function assertEqualsExceptKeys($expected, $actual, $keys) {
+        $expected1 = $expected;
+        $actual1 = $actual;
+
+        foreach (array_keys($actual1) as $key) {
+            if (!array_key_exists($key, $expected1)) {
+                unset($actual1[$key]);
+            }
+        }
+
+        foreach ($keys as $key) {
+            unset($expected1[$key]);
+            unset($actual1[$key]);
+        }
+
+        if (isset($actual1['data'])) {
+            foreach ($actual1['data'] as $idx => $row) {
+                foreach ($row as $key => $value) {
+                    if (!array_key_exists($key, $expected1['data'][0])) {
+//                        var_dump("unset data[].{$key}");
+                        unset($actual1['data'][$idx][$key]);
+                    }
+                }
+            }
+
+            if (isset($actual1['data'][0]['inputs'])) {
+                foreach ($actual1['data'] as $idx => $row) {
+                    foreach ($row['inputs'] as $inputIdx => $input) {
+                        foreach ($input as $key => $value) {
+                            if (!array_key_exists($key, $expected1['data'][$idx]['inputs'][$inputIdx])) {
+//                                var_dump("unset data[].inputs[].{$key}");
+                                unset($actual1['data'][$idx]['inputs'][$inputIdx][$key]);
+                            }
+                        }
+                    }
+                    foreach ($row['outputs'] as $outputIdx => $output) {
+                        foreach ($output as $key => $value) {
+                            if (!array_key_exists($key, $expected1['data'][$idx]['outputs'][$outputIdx])) {
+//                                var_dump("unset data[].outputs[].{$key}");
+                                unset($actual1['data'][$idx]['outputs'][$outputIdx][$key]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach ($keys as $key) {
+                if (strpos($key, ".data.") === 0) {
+                    $key1 = substr($key, strlen(".data."));
+                    foreach ($expected1['data'] as &$expectedRow) {
+                        unset($expectedRow[$key1]);
+                    }
+                    foreach ($actual1['data'] as &$actualRow) {
+                        unset($actualRow[$key1]);
+                    }
+                }
+            }
+        }
+
+        $this->assertEquals($expected1, $actual1);
+    }
+
     public function testBlock() {
         $client = $this->setupBlocktrailSDK();
 
@@ -154,21 +216,28 @@ class BlocktrailSDKTest extends BlocktrailTestCase
         $this->assertTrue(is_array($response), "Default response is not an array");
         $this->assertArrayHasKey('hash', $response, "'hash' key not in response");
         $this->assertEquals("000000000000034a7dedef4a161fa058a2d67a173a90155f3a2fe6fc132e0ebf", $response['hash'], "Block hash returned does not match expected value");
+//        file_put_contents(__DIR__ . "/data/block.000000000000034a7dedef4a161fa058a2d67a173a90155f3a2fe6fc132e0ebf.json", \json_encode($response));
+        $this->assertEqualsExceptKeys(\json_decode(file_get_contents(__DIR__ . "/data/block.000000000000034a7dedef4a161fa058a2d67a173a90155f3a2fe6fc132e0ebf.json"), true), $response, ['confirmations', 'value']);
 
         //block info by height
         $response = $client->block(200000);
         $this->assertTrue(is_array($response), "Default response is not an array");
         $this->assertArrayHasKey('hash', $response, "'hash' key not in response");
         $this->assertEquals("000000000000034a7dedef4a161fa058a2d67a173a90155f3a2fe6fc132e0ebf", $response['hash'], "Block hash returned does not match expected value");
+//        file_put_contents(__DIR__ . "/data/block.000000000000034a7dedef4a161fa058a2d67a173a90155f3a2fe6fc132e0ebf.json", \json_encode($response));
+        $this->assertEqualsExceptKeys(\json_decode(file_get_contents(__DIR__ . "/data/block.000000000000034a7dedef4a161fa058a2d67a173a90155f3a2fe6fc132e0ebf.json"), true), $response, ['confirmations', 'value']);
 
         //block transactions
-        $response = $client->blockTransactions("000000000000034a7dedef4a161fa058a2d67a173a90155f3a2fe6fc132e0ebf", $page = 1, $limit = 23);
+        $response = $client->blockTransactions(1, $page = 1, $limit = 23);
         $this->assertTrue(is_array($response), "Default response is not an array");
         $this->assertArrayHasKey('total', $response, "'total' key not in response");
         $this->assertArrayHasKey('data', $response, "'data' key not in response");
-        $this->assertEquals(23, count($response['data']), "Count of transactions returned is not equal to 23");
+        $this->assertEquals(1, count($response['data']), "Count of transactions returned is not equal to 23");
+//        file_put_contents(__DIR__ . "/data/blockTransactions.1.json", \json_encode($response));
+        $this->assertEqualsExceptKeys(\json_decode(file_get_contents(__DIR__ . "/data/blockTransactions.1.json"), true), $response, ['.data.confirmations']);
 
         //all blocks
+        // @TODO: allBlocks
         $response = $client->allBlocks($page = 2, $limit = 23);
         $this->assertTrue(is_array($response), "Default response is not an array");
         $this->assertArrayHasKey('total', $response, "'total' key not in response");
@@ -179,6 +248,10 @@ class BlocktrailSDKTest extends BlocktrailTestCase
         $this->assertArrayHasKey('hash', $response['data'][1], "'hash' key not in second block of response");
         $this->assertEquals("000000000cd339982e556dfffa9de94744a4135c53eeef15b7bcc9bdeb9c2182", $response['data'][0]['hash'], "First block hash does not match expected value");
         $this->assertEquals("00000000fc051fbbce89a487e811a5d4319d209785ea4f4b27fc83770d1e415f", $response['data'][1]['hash'], "Second block hash does not match expected value");
+//        file_put_contents(__DIR__ . "/data/allBlocks.000000000cd339982e556dfffa9de94744a4135c53eeef15b7bcc9bdeb9c2182.json", \json_encode($response['data'][0]));
+//        file_put_contents(__DIR__ . "/data/allBlocks.000000000000034a7dedef4a161fa058a2d67a173a90155f3a2fe6fc132e0ebf.json", \json_encode($response['data'][1]));
+        $this->assertEqualsExceptKeys(\json_decode(file_get_contents(__DIR__ . "/data/allBlocks.000000000cd339982e556dfffa9de94744a4135c53eeef15b7bcc9bdeb9c2182.json"), true), $response['data'][0], ['confirmations']);
+        $this->assertEqualsExceptKeys(\json_decode(file_get_contents(__DIR__ . "/data/allBlocks.000000000000034a7dedef4a161fa058a2d67a173a90155f3a2fe6fc132e0ebf.json"), true), $response['data'][1], ['confirmations']);
 
         //latest block
         $response = $client->blockLatest();

@@ -3,6 +3,7 @@
 namespace Blocktrail\SDK\Tests;
 
 use Blocktrail\SDK\BlocktrailSDK;
+use Blocktrail\SDK\BlocktrailSDK2;
 use Blocktrail\SDK\Connection\Exceptions\ObjectNotFound;
 use Blocktrail\SDK\WalletInterface;
 
@@ -24,7 +25,8 @@ abstract class BlocktrailTestCase extends \PHPUnit_Framework_TestCase {
         $apiKey = getenv('BLOCKTRAIL_SDK_APIKEY') ?: 'EXAMPLE_BLOCKTRAIL_SDK_PHP_APIKEY';
         $apiSecret = getenv('BLOCKTRAIL_SDK_APISECRET') ?: 'EXAMPLE_BLOCKTRAIL_SDK_PHP_APISECRET';
 
-        $client = new BlocktrailSDK($apiKey, $apiSecret, $network, $testnet, $apiVersion, $apiEndpoint);
+        $client = new BlocktrailSDK2($apiKey, $apiSecret, $network, $testnet, $apiVersion, $apiEndpoint);
+        $client->setVerboseErrors(true);
 
         return $client;
     }

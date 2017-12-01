@@ -95,7 +95,7 @@ class RestClient {
 
         $curlHandler = new CurlHandler($curlOptions);
         $handler = HandlerStack::create($curlHandler);
-        $handler->push(GuzzleHttpSignatures::middlewareFromContext($context));
+//        $handler->push(GuzzleHttpSignatures::middlewareFromContext($context));
 
         return new Guzzle($options + array(
             'handler' => $handler,
@@ -311,6 +311,8 @@ class RestClient {
         $httpResponseCode = (int)$responseObj->getStatusCode();
         $httpResponsePhrase = (string)$responseObj->getReasonPhrase();
         $body = $responseObj->getBody();
+
+        sleep(1);
 
         if ($httpResponseCode == 200) {
             if (!$body) {
